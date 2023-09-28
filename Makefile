@@ -22,7 +22,7 @@ prg.orig: data
 	$(BSPLIT) c data/tp021-01.u10 data/tp021-02.u11 $@
 
 prga.orig: dataj
-	$(BSPLIT) c data/tp021-01a.u10 data/tp021-02a.u11 $@
+	$(BSPLIT) c dataj/tp021-01a.u10 dataj/tp021-02a.u11 $@
 
 prg.o: prg.orig
 	$(AS) $(SRC) $(ASFLAGS) -o prg.o
@@ -33,8 +33,6 @@ prg.bin: prg.o
 ghox: prg.bin data
 	mkdir -p $@
 	cp data/* $@/
-	rm $@/tp021-01a.u10
-	rm $@/tp021-02a.u11
 	$(BSPLIT) s $< $@/tp021-01.u10 $@/tp021-02.u11
 
 ghoxj: prg.bin data
