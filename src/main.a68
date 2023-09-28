@@ -4,4 +4,83 @@
 ; Ghox (Spinner ver.)
 	BINCLUDE	"prg.orig"
 
+JoystickMode = $83100
 
+ROM_FREE = $3F100
+LAST_ORG	:=	 ROM_FREE
+
+; After player inputs are read, manipulate the data so that:
+; Up = btn3
+; Down = !btn3
+	ORG	$1CD0
+	jmp	input_coaxer
+
+	ORG	LAST_ORG
+input_coaxer:
+	move.b	(a4), d1  ; Input data from MCU
+	tst.b	$180009  ; Check if "unused" DIP switch is set
+	bpl	.set_input
+
+	andi.b	#$FC, d1  ; Mask out up / down
+	btst	#6, d1    ; Test button 3
+	beq	.btn3_released
+.btn3_held:
+	bset	#0, d1    ; Set lever up bit
+	bra	.set_input
+.btn3_released:
+	bset	#1, d1    ; Set lever down bit
+.set_input:
+	move.b	d1, (a0)+
+	and.b	d1, d0
+	move.b	d0, (a0)
+	rts
+
+LAST_ORG	:=	*
+
+	; Unification of Spinner and Joystick controls. If joystick left/right
+	; inputs are detected, it sets fake spinner values and proceeds without
+	; using the actual spinner.
+	ORG	$16E4
+	jmp	spinner_shenanigans
+
+	ORG	LAST_ORG
+
+; If the joystick L/R inputs are ever pushed, the game switches to and remains
+; in Joystick Mode, without using the spinner.
+; In joystick mode, movement speeds and Button 1 behavior track that of `ghoxj`
+; while normal spinner usage is unmodified.
+; The button 3 hack runs at a higher level than this and has no effect.
+spinner_shenanigans:
+	; See if either JAMMA L/R are pressed, and kick into Joystick Mode
+	btst	#2, -1(a4)
+	bne	.pushed
+	btst	#3, -1(a4)
+	bne	.pushed
+	bra	.not_pushed
+
+.pushed:
+	st	JoystickMode
+
+.not_pushed:
+	tst.b	JoystickMode
+	beq	.use_spinner
+
+.use_joystick:
+	; Recreation of joystick version movement
+	move.w	#$108 * 2, d2  ; H speed from J version
+	move.w	#$C4 * 2, d1   ; V "
+	btst	#4, -1(a4)     ; Button 1?
+	beq	.no_btn1
+	move.w	#$108 * 3, d2  ; 1.5x speed
+	move.w	#$C4 * 3, d1   ; "
+.no_btn1:
+	jmp	$1726  ; Apply speeds in d1/d2 directly
+
+.use_spinner:
+	jmp	$16EE  ; Use spinner data and V movement
+
+LAST_ORG	:=	*
+
+; License string update
+	ORG	$E3CB
+	dc.b	"         2023 MOF VER. "

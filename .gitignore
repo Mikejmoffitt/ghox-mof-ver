@@ -2,8 +2,10 @@ ghox.zip
 ghoxj.zip
 src/*.swp
 data/
+dataj/
 ghox/
-ghox3.zip
+ghoxj/
+ghox_mof_ver.zip
 prg.bin
 prg.o
 prg.orig

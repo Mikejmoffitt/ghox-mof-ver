@@ -4,7 +4,7 @@ SRC=src/main.a68
 BSPLIT=bsplit
 MAME=mame
 
-PKGNAME=ghox3
+PKGNAME=ghox_mof_ver
 
 ASFLAGS=-i . -n -U
 
@@ -12,14 +12,16 @@ ASFLAGS=-i . -n -U
 
 all: prg.bin
 
+dataj: ghoxj.zip
+	mkdir -p $@ && cp $< $@/ && cd $@ && unzip -o $< && rm ./$<
+
 data: ghox.zip ghoxj.zip
 	mkdir -p $@ && cp $< $@/ && cd $@ && unzip -o $< && rm ./$<
-	cp ghoxj.zip $@/ && cd $@ && unzip -o ghoxj.zip && rm ./ghoxj.zip
 
 prg.orig: data
 	$(BSPLIT) c data/tp021-01.u10 data/tp021-02.u11 $@
 
-prga.orig: data
+prga.orig: dataj
 	$(BSPLIT) c data/tp021-01a.u10 data/tp021-02a.u11 $@
 
 prg.o: prg.orig
@@ -35,7 +37,17 @@ ghox: prg.bin data
 	rm $@/tp021-02a.u11
 	$(BSPLIT) s $< $@/tp021-01.u10 $@/tp021-02.u11
 
+ghoxj: prg.bin data
+	mkdir -p $@
+	cp data/* $@/
+	rm $@/tp021-01.u10
+	rm $@/tp021-02.u11
+	$(BSPLIT) s $< $@/tp021-01a.u10 $@/tp021-02a.u11
+
 test: ghox
+	$(MAME) -rompath $(shell pwd) -debug $<
+
+testj: ghoxj
 	$(MAME) -rompath $(shell pwd) -debug $<
 
 $(PKGNAME).zip: ghox
@@ -48,4 +60,6 @@ clean:
 	@-rm -f prg.orig
 	@-rm -f prga.orig
 	@-rm -rf data/
+	@-rm -rf dataj/
 	@-rm -rf ghox/
+	@-rm -rf ghoxj/
