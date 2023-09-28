@@ -1,0 +1,7 @@
+	CPU	68000
+	PADDING	OFF
+	ORG	$000000
+; Ghox (Spinner ver.)
+	BINCLUDE	"prg.orig"
+
+

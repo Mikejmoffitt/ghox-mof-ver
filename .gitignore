@@ -1,0 +1,11 @@
+ghox.zip
+ghoxj.zip
+src/*.swp
+data/
+ghox/
+ghox3.zip
+prg.bin
+prg.o
+prg.orig
+prga.orig
+.Makefile.swp
